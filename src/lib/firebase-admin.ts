@@ -4,8 +4,14 @@ import { getStorage as getAdminStorage } from "firebase-admin/storage";
 import { getFirestore } from "firebase-admin/firestore";
 
 function buildOptions(): AppOptions {
+  // Prefer ADC via GOOGLE_APPLICATION_CREDENTIALS for local/dev
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    return { credential: applicationDefault() };
+  }
+
+  // Fallback: JSON in env
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (raw && raw.trim().length > 0) {
+  if (raw && raw.trim()) {
     try {
       const parsed = JSON.parse(raw);
       if (!parsed.client_email || typeof parsed.client_email !== "string") {
@@ -14,7 +20,6 @@ function buildOptions(): AppOptions {
       if (!parsed.private_key || typeof parsed.private_key !== "string") {
         throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON is missing "private_key" (string).');
       }
-      // Some environments mistakenly keep literal "\n" or remove them; firebase-admin accepts actual newlines
       parsed.private_key = parsed.private_key.replace(/\\n/g, "\n");
       return { credential: cert(parsed) };
     } catch (e: any) {
@@ -22,7 +27,8 @@ function buildOptions(): AppOptions {
       throw e;
     }
   }
-  // Fallback to ADC if provided (e.g., GOOGLE_APPLICATION_CREDENTIALS)
+
+  // Last resort
   return { credential: applicationDefault() };
 }
 
