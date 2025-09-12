@@ -18,4 +18,28 @@ try {
   console.error("❌ Invalid FIREBASE_SERVICE_ACCOUNT_JSON:", e.message);
   process.exit(1);
 }
+// Validates either FIREBASE_SERVICE_ACCOUNT_B64 (preferred) or FIREBASE_SERVICE_ACCOUNT_JSON.
+const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64;
+const json = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+if (!b64 && !json) {
+  console.error("❌ Missing FIREBASE_SERVICE_ACCOUNT_B64 or FIREBASE_SERVICE_ACCOUNT_JSON");
+  process.exit(1);
+}
+
+try {
+  const raw = b64 ? Buffer.from(b64, "base64").toString("utf8") : json;
+  const j = JSON.parse(raw);
+
+  if (typeof j.client_email !== "string") throw new Error("missing client_email");
+  if (typeof j.private_key !== "string") throw new Error("missing private_key");
+  if (!j.private_key.startsWith("-----BEGIN PRIVATE KEY-----")) {
+    throw new Error("private_key must start with BEGIN line");
+  }
+
+  console.log("✅ Service account looks valid");
+} catch (e) {
+  console.error("❌ Invalid service account:", e.message);
+  process.exit(1);
+}
 
