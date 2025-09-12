@@ -44,10 +44,10 @@ export default async function ContentPage({ searchParams }: { searchParams: Sear
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Tabs value={currentValue} defaultValue="case-studies">
+        <Tabs defaultValue={currentValue}>
           <TabsList>
-            <TabsTrigger value="case-studies" href={makeHref("case-studies", 1)}>Case Studies</TabsTrigger>
-            <TabsTrigger value="blog" href={makeHref("blog", 1)}>Blog</TabsTrigger>
+            <TabsTrigger value="case-studies">Case Studies</TabsTrigger>
+            <TabsTrigger value="blog">Blog</TabsTrigger>
           </TabsList>
         </Tabs>
         <div>
@@ -84,7 +84,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Sear
         <Button type="submit" variant="outline" size="sm">Apply</Button>
       </form>
 
-      <Tabs value={currentValue} defaultValue="case-studies">
+      <Tabs defaultValue={currentValue}>
         <TabsContent value="case-studies">
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
