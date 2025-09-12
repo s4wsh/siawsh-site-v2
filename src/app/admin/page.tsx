@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-muted-foreground">Create, edit, and publish projects.</p>
         </CardContent>
         <CardFooter>
-          <Link href="/admin/content">
+          <Link href="/admin/content?tab=case-studies">
             <Button>Go to Content</Button>
           </Link>
         </CardFooter>
@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-muted-foreground">Drafts, scheduling, and publishing tools.</p>
         </CardContent>
         <CardFooter>
-          <Link href="/admin/content">
+          <Link href="/admin/content?tab=blog">
             <Button>Go to Content</Button>
           </Link>
         </CardFooter>
@@ -57,4 +57,3 @@ export default function AdminDashboardPage() {
     </div>
   )
 }
-
