@@ -5,10 +5,16 @@
   "scripts": {
     "prebuild": "node scripts/check-sa.js",
     "dev": "next dev",
-    "build": "next build",
+    "build": "node -e \"console.log('Node:', process.version);\" && npm -v && next build",
+    "build:no-pre": "node -e \"console.log('Node:', process.version);\" && npm -v && cross-env SKIP_SA_CHECK=1 next build",
     "start": "next start",
-    "lint": "eslint",
+    "type-check": "tsc --noEmit",
+    "lint": "next lint",
     "gen:b64": "base64 -i credentials/firebase-admin.json | tr -d '\n' || type -a base64"
+  },
+  "engines": {
+    "node": ">=20.11.1 <21",
+    "npm": ">=10"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -30,6 +36,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

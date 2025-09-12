@@ -1,13 +1,8 @@
 [build]
-  command = "npm run build"
+  command = "npm run build"   # you can switch to build:no-pre to test without prebuild
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20.11.1"
   NEXT_TELEMETRY_DISABLED = "1"
-  NPM_CONFIG_FUND = "false"
   NPM_FLAGS = "--no-audit --no-fund"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
