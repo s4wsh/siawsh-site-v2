@@ -16,9 +16,11 @@ type Item = { label: string; href: string }
 
 const items: Item[] = [
   { label: "Dashboard", href: "/admin" },
-  { label: "Content", href: "/admin/content" },
+  { label: "Content", href: "/admin/content?tab=case-studies" },
   { label: "Media", href: "/admin/media" },
   { label: "Settings", href: "/admin/settings" },
+  { label: "New Case Study", href: "/admin/content/projects/new" },
+  { label: "New Blog", href: "/admin/content/blog/new" },
 ]
 
 export default function CommandMenu() {
@@ -79,4 +81,3 @@ export default function CommandMenu() {
     </CommandDialog>
   )
 }
-

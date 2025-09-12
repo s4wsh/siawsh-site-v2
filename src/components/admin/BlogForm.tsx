@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Button from "@/components/ui/button"
 import Input from "@/components/ui/input"
-import { BlogPostInputSchema, type BlogPostInput } from "@/types/content"
+import { BlogPostSchema, type BlogPost } from "@/types/content"
+type BlogFormValues = Omit<BlogPost, "id"> & { id?: string }
 
 function slugify(input: string) {
   return input
@@ -22,12 +23,12 @@ export default function BlogForm({
   action,
   isEdit = false,
 }: {
-  defaultValues?: Partial<BlogPostInput>
+  defaultValues?: Partial<BlogFormValues>
   action: (formData: FormData) => void
   isEdit?: boolean
 }) {
-  const form = useForm<BlogPostInput>({
-    resolver: zodResolver(BlogPostInputSchema),
+  const form = useForm<BlogFormValues>({
+    resolver: zodResolver(BlogPostSchema) as any,
     defaultValues: {
       title: "",
       slug: "",

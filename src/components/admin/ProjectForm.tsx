@@ -8,7 +8,8 @@ import Button from "@/components/ui/button"
 import Input from "@/components/ui/input"
 import PasteImageUrl from "@/components/admin/PasteImageUrl"
 import MediaPicker from "@/components/admin/MediaPicker"
-import { ProjectInputSchema, type ProjectInput } from "@/types/content"
+import { ProjectSchema, type Project } from "@/types/content"
+type ProjectFormValues = Omit<Project, "id"> & { id?: string }
 
 function slugify(input: string) {
   return input
@@ -24,12 +25,12 @@ export default function ProjectForm({
   action,
   isEdit = false,
 }: {
-  defaultValues?: Partial<ProjectInput>
+  defaultValues?: Partial<ProjectFormValues>
   action: (formData: FormData) => void
   isEdit?: boolean
 }) {
-  const form = useForm<ProjectInput>({
-    resolver: zodResolver(ProjectInputSchema),
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(ProjectSchema) as any,
     defaultValues: {
       title: "",
       slug: "",
@@ -38,7 +39,7 @@ export default function ProjectForm({
       tags: [],
       role: [],
       tools: [],
-      timeline: { start: "", end: "" } as any,
+      timeline: { start: "", end: "" },
       problem: "",
       approach: "",
       solution: "",

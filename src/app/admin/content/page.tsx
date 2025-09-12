@@ -3,6 +3,7 @@ import { listProjects, listBlogPosts, deleteProject, deleteBlogPost } from "./ac
 import Button from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DeleteButton from "@/components/admin/DeleteButton"
+import FuzzySearchFilter from "@/components/admin/FuzzySearchFilter"
 
 export const dynamic = "force-dynamic"
 
@@ -13,11 +14,12 @@ type SearchParams = {
   page?: string | number
 }
 
-export default async function ContentPage({ searchParams }: { searchParams: SearchParams }) {
-  const tab = searchParams.tab === "blog" ? "blog" : "case-studies"
-  const q = searchParams.q?.toString() || ""
-  const status = (searchParams.status as "draft" | "published" | undefined) || undefined
-  const page = Math.max(1, Number(searchParams.page || 1))
+export default async function ContentPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams
+  const tab = sp.tab === "blog" ? "blog" : "case-studies"
+  const q = sp.q?.toString() || ""
+  const status = (sp.status as "draft" | "published" | undefined) || undefined
+  const page = Math.max(1, Number(sp.page || 1))
   const limit = 10
 
   const [projects, posts] = await Promise.all([
@@ -82,11 +84,14 @@ export default async function ContentPage({ searchParams }: { searchParams: Sear
           <option value="published">Published</option>
         </select>
         <Button type="submit" variant="outline" size="sm">Apply</Button>
+        <div className="ml-2">
+          <FuzzySearchFilter targetId={tab === "case-studies" ? "table-case-studies" : "table-blog"} />
+        </div>
       </form>
 
       <Tabs defaultValue={currentValue}>
         <TabsContent value="case-studies">
-        <div className="overflow-x-auto rounded-md border">
+        <div id="table-case-studies" className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
@@ -99,7 +104,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Sear
             </thead>
             <tbody>
               {projects.map((p) => (
-                <tr key={p.id} className="border-t">
+                <tr key={p.id} className="border-t" data-title={(p.title || "").toLowerCase()}>
                   <td className="px-3 py-2">{p.title}</td>
                   <td className="px-3 py-2">{(p as any).client || "-"}</td>
                   <td className="px-3 py-2 capitalize">{p.status}</td>
@@ -139,7 +144,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Sear
         </div>
         </TabsContent>
         <TabsContent value="blog">
-        <div className="overflow-x-auto rounded-md border">
+        <div id="table-blog" className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
@@ -151,7 +156,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Sear
             </thead>
             <tbody>
               {posts.map((p) => (
-                <tr key={p.id} className="border-t">
+                <tr key={p.id} className="border-t" data-title={(p.title || "").toLowerCase()}>
                   <td className="px-3 py-2">{p.title}</td>
                   <td className="px-3 py-2 capitalize">{p.status}</td>
                   <td className="px-3 py-2">{p.updatedAt?.slice(0, 19).replace("T", " ")}</td>

@@ -4,19 +4,13 @@ import * as React from "react"
 import Button from "@/components/ui/button"
 import { clientDb } from "@/lib/firebase-client"
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
+import type { MediaItem } from "@/types/content"
 
-type MediaItem = {
-  id: string
-  path: string
-  url: string
-  type: string
-  filename?: string
-  createdAt?: string
-}
+type LocalMediaItem = MediaItem & { filename?: string }
 
 export default function MediaPicker({ onSelect, buttonLabel = "Pick from Library" }: { onSelect: (item: { url: string; path: string }) => void; buttonLabel?: string }) {
   const [open, setOpen] = React.useState(false)
-  const [items, setItems] = React.useState<MediaItem[]>([])
+  const [items, setItems] = React.useState<LocalMediaItem[]>([])
   const [search, setSearch] = React.useState("")
   const [visible, setVisible] = React.useState(24)
 
@@ -24,7 +18,7 @@ export default function MediaPicker({ onSelect, buttonLabel = "Pick from Library
     if (!open) return
     const qy = query(collection(clientDb, "media"), orderBy("createdAt", "desc"))
     const unsub = onSnapshot(qy, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as MediaItem[]
+      const data = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as LocalMediaItem[]
       setItems(data)
     })
     return () => unsub()
@@ -104,4 +98,3 @@ export default function MediaPicker({ onSelect, buttonLabel = "Pick from Library
     </>
   )
 }
-

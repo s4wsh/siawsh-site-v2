@@ -1,23 +1,26 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { adminDb } from "@/lib/firebase-admin"
-import { ProjectSchema, type Project } from "@/types/content"
+import { projectConverter } from "@/lib/db"
+import type { Project } from "@/types/content"
+import Image from "next/image"
 
 export const dynamic = "force-dynamic"
 
 type Params = { slug: string }
 
 async function fetchBySlug(slug: string): Promise<Project | null> {
-  const snap = await adminDb.collection("projects").where("slug", "==", slug).limit(1).get()
+  const snap = await adminDb.collection("projects").withConverter(projectConverter).where("slug", "==", slug).limit(1).get()
   if (snap.empty) return null
   const doc = snap.docs[0]
-  const data = { id: doc.id, ...(doc.data() as any) }
+  const data = doc.data() as Project
   if ((data as any).status !== "published") return null
-  return ProjectSchema.parse(data)
+  return data
 }
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const data = await fetchBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const p = await params
+  const data = await fetchBySlug(p.slug)
   if (!data) return {}
   const seo = (data as any).seo || {}
   const title = seo.title || `${data.title} — Case Study`
@@ -34,8 +37,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   }
 }
 
-export default async function ProjectDetail({ params }: { params: Params }) {
-  const data = await fetchBySlug(params.slug)
+export default async function ProjectDetail({ params }: { params: Promise<Params> }) {
+  const p = await params
+  const data = await fetchBySlug(p.slug)
   if (!data) return notFound()
 
   const caseStudy: any = data
@@ -62,8 +66,8 @@ export default async function ProjectDetail({ params }: { params: Params }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="space-y-3">
         {data.coverUrl && (
-          <div className="aspect-[16/9] w-full overflow-hidden rounded-lg border bg-muted">
-            <img src={data.coverUrl} alt={data.title} className="h-full w-full object-cover" />
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg border bg-muted">
+            <Image src={data.coverUrl} alt={data.title} fill sizes="100vw" className="object-cover" />
           </div>
         )}
         <h1 className="text-2xl font-semibold">{data.title}</h1>
@@ -144,7 +148,7 @@ export default async function ProjectDetail({ params }: { params: Params }) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {gallery.map((src, i) => (
               <div key={`${src}-${i}`} className="overflow-hidden rounded-lg border bg-muted">
-                <img src={src} alt={`${data.title} image ${i + 1}`} className="h-full w-full object-cover" />
+                <Image src={src} alt={`${data.title} image ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
               </div>
             ))}
           </div>
@@ -160,4 +164,3 @@ export default async function ProjectDetail({ params }: { params: Params }) {
     </article>
   )
 }
-

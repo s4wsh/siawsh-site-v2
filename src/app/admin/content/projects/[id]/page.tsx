@@ -4,8 +4,9 @@ import { getProject, updateProject } from "../../actions"
 
 export const dynamic = "force-dynamic"
 
-export default async function EditProjectPage({ params }: { params: { id: string } }) {
-  const project = await getProject(params.id)
+export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const p = await params
+  const project = await getProject(p.id)
   if (!project) return notFound()
 
   async function action(formData: FormData) {
@@ -41,7 +42,7 @@ export default async function EditProjectPage({ params }: { params: { id: string
       status: (formData.get("status") as any) || (formData.get("publish") ? "published" : proj.status),
       publishedAt: proj.publishedAt,
     }
-    await updateProject(proj.id, payload)
+    await updateProject(proj.id!, payload)
     redirect(`/admin/content?tab=case-studies`)
   }
 

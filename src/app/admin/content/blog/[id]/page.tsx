@@ -4,8 +4,9 @@ import { getBlogPost, updateBlogPost } from "../../actions"
 
 export const dynamic = "force-dynamic"
 
-export default async function EditBlogPostPage({ params }: { params: { id: string } }) {
-  const post = await getBlogPost(params.id)
+export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const p = await params
+  const post = await getBlogPost(p.id)
   if (!post) return notFound()
 
   async function action(formData: FormData) {
@@ -30,7 +31,7 @@ export default async function EditBlogPostPage({ params }: { params: { id: strin
       status: (formData.get("status") as any) || (formData.get("publish") ? "published" : b.status),
       publishedAt: b.publishedAt,
     }
-    await updateBlogPost(b.id, payload)
+    await updateBlogPost(b.id!, payload)
     redirect(`/admin/content?tab=blog`)
   }
 

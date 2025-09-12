@@ -1,20 +1,12 @@
-import { NextRequest, NextResponse } from "next/server"
-import { revalidatePath } from "next/cache"
+import { NextRequest, NextResponse } from "next/server";
+type RevalidateBody = { paths: string[] };
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json().catch(() => ({}))
-    const paths = Array.isArray(body?.paths) ? (body.paths as string[]) : []
-    if (!paths.length) {
-      return NextResponse.json({ ok: false, error: "Missing 'paths' array" }, { status: 400 })
-    }
-    for (const p of paths) {
-      if (typeof p === "string" && p.startsWith("/")) {
-        revalidatePath(p)
-      }
-    }
-    return NextResponse.json({ ok: true })
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || "Unknown error" }, { status: 500 })
+  const body = (await req.json()) as RevalidateBody;
+  if (!body?.paths || !Array.isArray(body.paths) || body.paths.length === 0) {
+    return NextResponse.json({ ok: false, error: "paths must be non-empty array" }, { status: 400 });
   }
+  const { revalidatePath } = await import("next/cache");
+  for (const p of body.paths) if (typeof p === "string" && p.startsWith("/")) revalidatePath(p);
+  return NextResponse.json({ ok: true, revalidated: body.paths });
 }
