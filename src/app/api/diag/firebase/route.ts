@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import app, { adminDb } from "@/lib/firebase-admin";
+import "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
 
 export async function GET() {
   try {
@@ -15,4 +16,3 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: String(e?.message || e) }, { status: 500 });
   }
 }
-
