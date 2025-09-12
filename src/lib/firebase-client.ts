@@ -2,6 +2,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
 import { env } from "@/lib/env";
 
 const firebaseConfig = {
@@ -17,4 +18,5 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const clientAuth = getAuth(app);
 export const clientStorage = getStorage(app);
+export const clientDb = getFirestore(app);
 export default app;

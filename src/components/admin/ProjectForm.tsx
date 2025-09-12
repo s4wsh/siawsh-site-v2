@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import Button from "@/components/ui/button"
 import Input from "@/components/ui/input"
 import PasteImageUrl from "@/components/admin/PasteImageUrl"
+import MediaPicker from "@/components/admin/MediaPicker"
 import { ProjectInputSchema, type ProjectInput } from "@/types/content"
 
 function slugify(input: string) {
@@ -93,6 +94,9 @@ export default function ProjectForm({
             onChange={(v) => form.setValue("coverUrl", v)}
             placeholder="https://..."
           />
+          <div className="mt-2">
+            <MediaPicker onSelect={({ url }) => form.setValue("coverUrl", url)} />
+          </div>
         </div>
       </div>
 
@@ -211,7 +215,10 @@ function GalleryEditor({ defaultItems }: { defaultItems: string[] }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="block text-sm font-medium">Gallery URLs</label>
-        <Button type="button" size="sm" variant="outline" onClick={() => setItems((a) => [...a, ""])}>Add</Button>
+        <div className="flex gap-2">
+          <Button type="button" size="sm" variant="outline" onClick={() => setItems((a) => [...a, ""])}>Add</Button>
+          <MediaPicker onSelect={({ url }) => setItems((a) => [...a, url])} buttonLabel="Add from Library" />
+        </div>
       </div>
       <div className="space-y-2">
         {items.map((val, idx) => (

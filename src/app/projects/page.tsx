@@ -15,9 +15,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type SearchParams = { tag?: string; page?: string | number }
 
-export default async function ProjectsIndex({ searchParams }: { searchParams: SearchParams }) {
-  const tag = (searchParams.tag || "").toString().trim()
-  const page = Math.max(1, Number(searchParams.page || 1))
+export default async function ProjectsIndex({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams
+  const tag = (sp.tag || "").toString().trim()
+  const page = Math.max(1, Number(sp.page || 1))
   const limit = 12
 
   // Fetch published projects ordered by publishedAt desc
@@ -92,4 +93,3 @@ export default async function ProjectsIndex({ searchParams }: { searchParams: Se
     </div>
   )
 }
-
