@@ -88,7 +88,16 @@ export async function createBlogPost(data: CreateBlogInput) {
   const doc = { ...parsed.data, updatedAt: now, publishedAt: parsed.data.status === "published" ? now : parsed.data.publishedAt } as BlogPost;
   await adminDb.collection("blogPosts").withConverter(blogConverter).doc(doc.slug).set(doc);
   revalidatePath("/blog");
-  if (doc.status === "published") revalidatePath(`/blog/${doc.slug}`);
+  if (doc.status === "published") {
+    revalidatePath(`/blog/${doc.slug}`);
+    try {
+      await fetch("/api/revalidate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ paths: ["/blog", `/blog/${doc.slug}`] }),
+      });
+    } catch {}
+  }
   return { ok: true, id: doc.slug };
 }
 
@@ -97,7 +106,17 @@ export async function updateBlogPost(id: string, data: UpdateBlogInput) {
   const patch = { ...data, updatedAt: now } as Partial<BlogPost>;
   await adminDb.collection("blogPosts").withConverter(blogConverter).doc(id).set(patch, { merge: true });
   revalidatePath("/blog");
-  if (patch.status === "published") revalidatePath(`/blog/${data.slug || id}`);
+  if (patch.status === "published") {
+    const path = `/blog/${data.slug || id}`;
+    revalidatePath(path);
+    try {
+      await fetch("/api/revalidate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ paths: ["/blog", path] }),
+      });
+    } catch {}
+  }
   return { ok: true };
 }
 

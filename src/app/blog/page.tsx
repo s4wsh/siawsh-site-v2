@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { adminDb } from "@/lib/firebase-admin"
 import { blogConverter } from "@/lib/db"
 import type { BlogPost } from "@/types/content"
@@ -60,9 +61,14 @@ export default async function BlogIndex({ searchParams }: { searchParams: Promis
             className="group block overflow-hidden rounded-lg border transition-shadow hover:shadow-md"
           >
             {p.coverUrl && (
-              <div className="aspect-[16/9] w-full bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.coverUrl} alt={p.title} className="h-full w-full object-cover transition-transform group-hover:scale-[1.01]" />
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                <Image
+                  src={p.coverUrl}
+                  alt={p.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover transition-transform group-hover:scale-[1.01]"
+                />
               </div>
             )}
             <div className="p-4">

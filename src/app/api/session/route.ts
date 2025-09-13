@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { adminAuth } from "@/lib/firebase-admin"
+import app from "@/lib/firebase-admin"
+import { getAuth } from "firebase-admin/auth"
+
+const adminAuth = getAuth(app)
 
 const EXPIRES_IN_MS = 60 * 60 * 24 * 5 * 1000 // 5 days
 
@@ -36,4 +39,3 @@ export async function DELETE() {
   store.set("session", "", { path: "/", maxAge: 0 })
   return NextResponse.json({ ok: true })
 }
-

@@ -4,8 +4,11 @@ import { notFound } from "next/navigation"
 import { adminDb } from "@/lib/firebase-admin"
 import { blogConverter } from "@/lib/db"
 import type { BlogPost } from "@/types/content"
+import Image from "next/image"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 300
+export const dynamicParams = true
 
 async function fetchBySlug(slug: string): Promise<BlogPost | null> {
   const snap = await adminDb.collection("blogPosts").withConverter(blogConverter).where("slug", "==", slug).limit(1).get()
@@ -16,8 +19,9 @@ async function fetchBySlug(slug: string): Promise<BlogPost | null> {
   return data
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const data = await fetchBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const p = await params
+  const data = await fetchBySlug(p.slug)
   if (!data) return {}
   const seo = (data as any).seo || {}
   const title = seo.title || `${data.title} — Blog`
@@ -36,8 +40,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function BlogDetail({ params }: { params: { slug: string } }) {
-  const data = await fetchBySlug(params.slug)
+export default async function BlogDetail({ params }: { params: Promise<{ slug: string }> }) {
+  const p = await params
+  const data = await fetchBySlug(p.slug)
   if (!data) return notFound()
 
   // Find previous (newer) and next (older) posts based on publishedAt
@@ -77,9 +82,8 @@ export default async function BlogDetail({ params }: { params: { slug: string } 
         </div>
       </header>
       {data.coverUrl && (
-        <div className="mt-4 overflow-hidden rounded-lg border bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={data.coverUrl} alt={data.title} className="h-full w-full object-cover" />
+        <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-lg border bg-muted">
+          <Image src={data.coverUrl} alt={data.title} fill sizes="100vw" className="object-cover" />
         </div>
       )}
       {data.excerpt && (

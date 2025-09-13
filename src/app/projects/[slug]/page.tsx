@@ -145,10 +145,10 @@ export default async function ProjectDetail({ params }: { params: Promise<Params
       {!!gallery.length && (
         <section className="mt-8 space-y-4">
           <h2 className="text-lg font-semibold">Gallery</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.map((src, i) => (
-              <div key={`${src}-${i}`} className="overflow-hidden rounded-lg border bg-muted">
-                <Image src={src} alt={`${data.title} image ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+              <div key={`${src}-${i}`} className="relative aspect-[4/3] overflow-hidden rounded-lg border bg-muted">
+                <Image src={src} alt={`${data.title} image ${i + 1}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
               </div>
             ))}
           </div>
