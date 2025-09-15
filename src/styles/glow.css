@@ -59,3 +59,17 @@
   .glow-underline::after { filter: blur(4px); }
 }
 
+/* Button depth */
+.glow-button {
+  position: relative;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 6px 20px rgba(0,0,0,.25),
+    0 0 0 1px rgba(255,255,255,.08);
+}
+.glow-button:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 10px 24px rgba(0,0,0,.35),
+    0 0 0 1px rgba(255,255,255,.1);
+}

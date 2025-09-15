@@ -62,7 +62,7 @@ export default async function BlogDetail({ params }: { params: Promise<P> }) {
       </header>
 
       {data.cover ? (
-        <AspectImage src={data.cover.src} alt={data.cover.alt || data.title} ratio="16/9" fill sizes="100vw" />
+        <AspectImage src={data.cover.src} alt={data.cover.alt || data.title} fill sizes="100vw" wrapperClassName="rounded-2xl aspect-[16/9] md:aspect-[21/9]" />
       ) : null}
 
       {data.excerpt && (

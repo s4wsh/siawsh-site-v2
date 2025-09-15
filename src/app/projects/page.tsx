@@ -40,9 +40,9 @@ export default async function ProjectsIndex({ searchParams }: { searchParams: Pr
             href={`/projects/${p.slug}`}
             prefetch
             aria-label={`View case study: ${p.title}`}
-            className="group overflow-hidden rounded-2xl border border-muted transition-colors hover:bg-accent/10 neon-glow"
+            className="group overflow-hidden rounded-2xl border border-muted transition-colors hover:bg-accent/10 glow-card"
           >
-            <AspectImage src={p.cover.src} alt={p.cover.alt} ratio="16/9" fill sizes={GRID_SIZES} />
+            <AspectImage src={p.cover.src} alt={p.cover.alt} fill sizes={GRID_SIZES} wrapperClassName="rounded-2xl aspect-[16/9]" />
             <div className="p-3">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-medium leading-tight">{p.title}</h3>

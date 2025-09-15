@@ -65,6 +65,11 @@ const eslintConfig = [
             'JSXOpeningElement[name.name="AspectImage"]:has(JSXAttribute[name.name="fill"]):has(JSXAttribute[name.name="style"] ObjectExpression > Property[key.name=/^(width|height)$/])',
           message: "AspectImage: In fill mode, do not set style.width/height.",
         },
+        {
+          selector:
+            'JSXOpeningElement[name.name=/^(Image|img)$/] JSXAttribute[name.name="alt"][value.value=""]',
+          message: "Images must not have empty alt text (unless purely decorative).",
+        },
       ],
     },
   },

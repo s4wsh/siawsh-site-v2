@@ -11,13 +11,15 @@ const TABS: Tab[] = [
 export default function SegmentTabs({ basePath = "/admin/content" }: { basePath?: string }) {
   const sp = useSearchParams();
   const router = useRouter();
-  const active = (sp.get("kind") as "cases" | "blog") ?? "cases";
+  const remembered = typeof window !== 'undefined' ? (sessionStorage.getItem('seg.kind') as "cases" | "blog" | null) : null;
+  const active = ((sp.get("kind") as "cases" | "blog") ?? remembered) || "cases";
 
   const onSelect = (key: Tab["key"]) => {
     const p = new URLSearchParams(sp.toString());
     p.set("kind", key);
     p.delete("q");
     p.set("page", "1");
+    try { sessionStorage.setItem('seg.kind', key); } catch {}
     router.replace(`${basePath}?${p.toString()}`, { scroll: false });
   };
 
@@ -38,4 +40,3 @@ export default function SegmentTabs({ basePath = "/admin/content" }: { basePath?
     </div>
   );
 }
-

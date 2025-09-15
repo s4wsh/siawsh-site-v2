@@ -13,9 +13,9 @@ type Props = {
 
 export default function BlogCard({ slug, title, excerpt, cover, date, readingMinutes }: Props) {
   return (
-    <Link href={`/blog/${slug}`} className="group block overflow-hidden rounded-2xl border border-muted transition-shadow hover:shadow-md neon-glow">
+    <Link href={`/blog/${slug}`} className="group block overflow-hidden rounded-2xl border border-muted transition-shadow hover:shadow-md glow-card">
       {cover ? (
-        <AspectImage src={cover.src} alt={cover.alt || title} ratio="16/9" fill sizes={GRID_SIZES} />
+        <AspectImage src={cover.src} alt={cover.alt || title} fill sizes={GRID_SIZES} wrapperClassName="rounded-2xl aspect-[16/9]" />
       ) : null}
       <div className="p-4">
         <h3 className="text-lg font-semibold group-hover:underline">{title}</h3>
@@ -28,4 +28,3 @@ export default function BlogCard({ slug, title, excerpt, cover, date, readingMin
     </Link>
   );
 }
-

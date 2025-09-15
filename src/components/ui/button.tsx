@@ -54,7 +54,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "inline-flex items-center justify-center gap-2 transition-colors neon-glow",
+          "inline-flex items-center justify-center gap-2 transition-colors glow-button",
           "focus:outline-none focus:ring-2 focus:ring-accent/40",
           "disabled:pointer-events-none disabled:opacity-50",
           sizeStyles[size],
