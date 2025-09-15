@@ -1,0 +1,25 @@
+{
+  "slug": "nova-forma-identity",
+  "title": "Nova Forma Identity System",
+  "date": "2023-12-02",
+  "year": 2023,
+  "client": "Nova Forma",
+  "role": ["Identity", "Guidelines"],
+  "tools": ["Figma", "After Effects"],
+  "category": ["Branding"],
+  "summary": "An adaptive identity for a design cooperative—grid‑based logo construction, motion rules, and an extensible visual library.",
+  "problem": "As the team grew, the brand fragmented across decks and socials. They needed a shared system that encouraged iteration without chaos.",
+  "solution": "We codified a component library and motion do's and don'ts. The logo adapts to container ratios while maintaining optical balance.",
+  "results": [
+    { "metric": "Deck build time", "value": "−50%" }
+  ],
+  "cover": { "src": "/images/projects/nova-forma-identity/cover.svg", "alt": "Nova Forma logo variants" },
+  "gallery": [
+    { "src": "/images/projects/nova-forma-identity/g1.svg", "alt": "Grid spec" },
+    { "src": "/images/projects/nova-forma-identity/g2.svg", "alt": "Motion specimens" },
+    { "src": "/images/projects/nova-forma-identity/g3.svg", "alt": "Guideline pages" },
+    { "src": "/images/projects/nova-forma-identity/g4.svg", "alt": "Iconography set" }
+  ],
+  "tags": ["identity", "systems"]
+}
+

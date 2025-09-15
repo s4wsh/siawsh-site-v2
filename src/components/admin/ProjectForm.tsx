@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import Button from "@/components/ui/button"
 import Input from "@/components/ui/input"
 import PasteImageUrl from "@/components/admin/PasteImageUrl"
-import MediaPicker from "@/components/admin/MediaPicker"
+import AdminMediaPicker from "@/components/admin/AdminMediaPicker"
 import { ProjectSchema, type Project } from "@/types/content"
 type ProjectFormValues = Omit<Project, "id"> & { id?: string }
 
@@ -24,10 +24,12 @@ export default function ProjectForm({
   defaultValues,
   action,
   isEdit = false,
+  autosave,
 }: {
   defaultValues?: Partial<ProjectFormValues>
   action: (formData: FormData) => void
   isEdit?: boolean
+  autosave?: (formData: FormData) => Promise<void>
 }) {
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(ProjectSchema) as any,
@@ -65,7 +67,29 @@ export default function ProjectForm({
     }
   }, [title, isEdit])
 
+  // Autosave debounce (edit only)
+  useEffect(() => {
+    if (!autosave || !isEdit) return;
+    const t = setTimeout(async () => {
+      try {
+        setSaving("saving")
+        const fd = new FormData()
+        fd.set("title", form.getValues("title") || "")
+        fd.set("slug", form.getValues("slug") || "")
+        fd.set("coverUrl", form.getValues("coverUrl") || "")
+        fd.set("client", form.getValues("client") || "")
+        fd.set("excerpt", form.getValues("excerpt") || "")
+        await autosave(fd)
+        setSaving("saved")
+        setTimeout(() => setSaving("idle"), 1200)
+      } catch {}
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [autosave, isEdit, form.watch("title"), form.watch("slug"), form.watch("coverUrl"), form.watch("client"), form.watch("excerpt")])
+
   const hasErrors = Object.keys(form.formState.errors).length > 0
+  const [saving, setSaving] = React.useState<"idle"|"saving"|"saved">("idle")
+  const [slugError, setSlugError] = React.useState<string | null>(null)
 
   return (
     <form action={action} className="space-y-4">
@@ -86,7 +110,21 @@ export default function ProjectForm({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="block text-sm font-medium">Slug</label>
-          <Input {...form.register("slug")} placeholder="project-title" />
+          <Input
+            {...form.register("slug")}
+            placeholder="project-title"
+            onBlur={async (e) => {
+              const v = e.currentTarget.value.trim();
+              if (!v) return;
+              try {
+                const res = await fetch(`/api/admin/slug-check?type=project&slug=${encodeURIComponent(v)}`);
+                const json = await res.json();
+                if (json?.exists && v !== (defaultValues?.slug || "")) setSlugError("Slug already exists");
+                else setSlugError(null);
+              } catch {}
+            }}
+          />
+          {slugError && <p className="text-xs text-destructive">{slugError}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium">Cover Image</label>
@@ -96,7 +134,7 @@ export default function ProjectForm({
             placeholder="https://..."
           />
           <div className="mt-2">
-            <MediaPicker onSelect={({ url }) => form.setValue("coverUrl", url)} />
+            <AdminMediaPicker slug={form.getValues("slug") || "project"} onSelect={({ src }) => form.setValue("coverUrl", src)} />
           </div>
         </div>
       </div>
@@ -202,9 +240,10 @@ export default function ProjectForm({
       <input type="hidden" name="excerpt" value={form.watch("excerpt") || ""} />
       <input type="hidden" name="body" value={form.watch("body") || ""} />
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={hasErrors}>Save Draft</Button>
-        <Button type="submit" name="publish" value="1" variant="secondary" disabled={hasErrors}>Publish</Button>
+      <div className="flex items-center gap-3">
+        <div className="text-xs text-muted-foreground min-w-24">{/* autosave indicator reserved */}</div>
+        <Button type="submit" disabled={hasErrors || !!slugError}>Save Draft</Button>
+        <Button type="submit" name="publish" value="1" variant="secondary" disabled={hasErrors || !!slugError}>Publish</Button>
       </div>
     </form>
   )
@@ -218,7 +257,7 @@ function GalleryEditor({ defaultItems }: { defaultItems: string[] }) {
         <label className="block text-sm font-medium">Gallery URLs</label>
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="outline" onClick={() => setItems((a) => [...a, ""])}>Add</Button>
-          <MediaPicker onSelect={({ url }) => setItems((a) => [...a, url])} buttonLabel="Add from Library" />
+          <AdminMediaPicker onSelect={({ src }) => setItems((a) => [...a, src])} buttonLabel="Add from Library" />
         </div>
       </div>
       <div className="space-y-2">

@@ -1,0 +1,61 @@
+/* Segmented control */
+.segwrap {
+  display: inline-flex;
+  gap: .5rem;
+  padding: .35rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,.06);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+  position: relative;
+}
+.segbtn {
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.04);
+  color: #d6d6d6;
+  font-weight: 600;
+  padding: .55rem 1.1rem;
+  border-radius: 9999px;
+  transition: 150ms ease;
+}
+.segbtn:hover { background: rgba(255,255,255,.08); }
+.segbtn-active {
+  color: #0b0b0b;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.35);
+}
+
+/* Glow lines / underlines */
+.glow-line {
+  height: 2px;
+  border-radius: 9999px;
+  background: radial-gradient(60% 300% at 50% 50%, rgba(69,179,255,.9), rgba(69,179,255,.25) 60%, transparent 100%);
+  filter: blur(1px);
+  opacity: .9;
+}
+.glow-underline::after {
+  content: "";
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: -8px;
+  height: 6px;
+  background: radial-gradient(40% 100% at 50% 50%, rgba(69,179,255,.55), rgba(69,179,255,.18) 60%, transparent 100%);
+  filter: blur(6px);
+}
+
+/* Card / image depth */
+.glow-card { position: relative; }
+.glow-card::before{
+  content: "";
+  position: absolute;
+  inset: auto 6% -10px 6%;
+  height: 12px;
+  background: radial-gradient(50% 120% at 50% 50%, rgba(69,179,255,.45), rgba(69,179,255,.12) 70%, transparent);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-underline::after { filter: blur(4px); }
+}
+

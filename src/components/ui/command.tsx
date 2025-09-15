@@ -36,7 +36,7 @@ export function Command({ className, ...props }: React.HTMLAttributes<HTMLDivEle
   )
 }
 
-export interface CommandInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export type CommandInputProps = React.InputHTMLAttributes<HTMLInputElement>
 
 export const CommandInput = React.forwardRef<HTMLInputElement, CommandInputProps>(
   ({ className, ...props }, ref) => {
@@ -97,4 +97,3 @@ export function CommandShortcut({ className, ...props }: React.HTMLAttributes<HT
 }
 
 export default Command
-

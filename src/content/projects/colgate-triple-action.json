@@ -1,0 +1,26 @@
+{
+  "slug": "colgate-triple-action",
+  "title": "Colgate Triple Action Campaign Toolkit",
+  "date": "2024-05-10",
+  "year": 2024,
+  "client": "Colgate",
+  "role": ["Motion Design", "3D"],
+  "tools": ["After Effects", "Blender"],
+  "category": ["Motion", "Branding"],
+  "summary": "A modular toolkit for regional adaptations—3D product renders, lower‑thirds, and pack animations for broadcast and social.",
+  "problem": "Inconsistent local adaptations diluted the core assets. Regions rebuilt animations from scratch, causing drift and delays.",
+  "solution": "We delivered a layered toolkit with editable timing markers and expression‑driven controls. Renders shipped with clean alphas.",
+  "results": [
+    { "metric": "Turnaround time", "value": "−40%" },
+    { "metric": "Version drift", "value": "−85%" }
+  ],
+  "cover": { "src": "/images/projects/colgate-triple-action/cover.svg", "alt": "Colgate 3D pack shot" },
+  "gallery": [
+    { "src": "/images/projects/colgate-triple-action/g1.svg", "alt": "3D product" },
+    { "src": "/images/projects/colgate-triple-action/g2.svg", "alt": "Type system" },
+    { "src": "/images/projects/colgate-triple-action/g3.svg", "alt": "Animation frames" },
+    { "src": "/images/projects/colgate-triple-action/g4.svg", "alt": "Social cutdowns" }
+  ],
+  "tags": ["broadcast", "toolkit"]
+}
+

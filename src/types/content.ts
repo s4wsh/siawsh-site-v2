@@ -1,5 +1,36 @@
 import { z } from "zod";
 
+// New canonical schemas (use at boundaries)
+export const TimestampZ = z
+  .object({ seconds: z.number(), nanoseconds: z.number() })
+  .transform((t) => new Date(t.seconds * 1000))
+  .or(z.date())
+  .optional();
+
+export const ProjectZ = z.object({
+  id: z.string().optional(),
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  heroUrl: z.string().url().optional(),
+  gallery: z.array(z.object({ url: z.string().url(), alt: z.string().optional() })).default([]),
+  excerpt: z.string().optional(),
+  status: z.enum(["draft", "published"]),
+  publishedAt: TimestampZ,
+});
+export type ProjectCanonical = z.infer<typeof ProjectZ>;
+
+export const BlogZ = z.object({
+  id: z.string().optional(),
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  coverUrl: z.string().url().optional(),
+  excerpt: z.string().optional(),
+  content: z.string().optional(),
+  status: z.enum(["draft", "published"]),
+  publishedAt: TimestampZ,
+});
+export type Blog = z.infer<typeof BlogZ>;
+
 export const ProjectSchema = z.object({
   id: z.string().optional(),
   title: z.string(),

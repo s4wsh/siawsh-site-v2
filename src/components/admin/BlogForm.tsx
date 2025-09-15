@@ -5,6 +5,7 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Button from "@/components/ui/button"
+import Image from "next/image"
 import Input from "@/components/ui/input"
 import { BlogPostSchema, type BlogPost } from "@/types/content"
 type BlogFormValues = Omit<BlogPost, "id"> & { id?: string }
@@ -18,14 +19,18 @@ function slugify(input: string) {
     .replace(/-+/g, "-")
 }
 
+import AdminMediaPicker from "@/components/admin/AdminMediaPicker"
+
 export default function BlogForm({
   defaultValues,
   action,
   isEdit = false,
+  autosave,
 }: {
   defaultValues?: Partial<BlogFormValues>
   action: (formData: FormData) => void
   isEdit?: boolean
+  autosave?: (formData: FormData) => Promise<void>
 }) {
   const form = useForm<BlogFormValues>({
     resolver: zodResolver(BlogPostSchema) as any,
@@ -55,6 +60,39 @@ export default function BlogForm({
   }, [title, isEdit])
 
   const hasErrors = Object.keys(form.formState.errors).length > 0
+  const [saving, setSaving] = React.useState<"idle"|"saving"|"saved">("idle")
+  const [slugError, setSlugError] = React.useState<string | null>(null)
+
+  // Unsaved changes prompt
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (form.formState.isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [form.formState.isDirty])
+
+  // Autosave debounce (edit only)
+  useEffect(() => {
+    if (!autosave || !isEdit) return;
+    const t = setTimeout(async () => {
+      try {
+        setSaving("saving")
+        const fd = new FormData()
+        fd.set("title", form.getValues("title") || "")
+        fd.set("slug", form.getValues("slug") || "")
+        fd.set("coverUrl", form.getValues("coverUrl") || "")
+        fd.set("excerpt", form.getValues("excerpt") || "")
+        await autosave(fd)
+        setSaving("saved")
+        setTimeout(() => setSaving("idle"), 1200)
+      } catch {}
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [autosave, isEdit, form.watch("title"), form.watch("slug"), form.watch("coverUrl"), form.watch("excerpt")])
 
   return (
     <form action={action} className="space-y-4">
@@ -68,14 +106,38 @@ export default function BlogForm({
         </div>
         <div>
           <label className="block text-sm font-medium">Slug</label>
-          <Input {...form.register("slug")} placeholder="post-title" />
+          <Input
+            {...form.register("slug")}
+            placeholder="post-title"
+            onBlur={async (e) => {
+              const v = e.currentTarget.value.trim();
+              if (!v) return;
+              try {
+                const res = await fetch(`/api/admin/slug-check?type=post&slug=${encodeURIComponent(v)}`);
+                const json = await res.json();
+                if (json?.exists && v !== (defaultValues?.slug || "")) setSlugError("Slug already exists");
+                else setSlugError(null);
+              } catch {}
+            }}
+          />
+          {slugError && <p className="text-xs text-destructive">{slugError}</p>}
         </div>
       </div>
+
+      {/* Live cover preview */}
+      {form.watch("coverUrl") ? (
+        <div className="mt-2 w-full max-w-xl">
+          <div className="relative aspect-[16/9] overflow-hidden rounded-lg border">
+            <Image src={form.watch("coverUrl") || ""} alt="Cover preview" fill className="object-cover" sizes="(min-width: 1024px) 800px, 100vw" />
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="block text-sm font-medium">Cover URL</label>
           <Input {...form.register("coverUrl")} placeholder="https://..." />
+          <div className="mt-2"><AdminMediaPicker slug={form.getValues("slug") || "post"} onSelect={({ src, alt }) => { form.setValue("coverUrl", src); if (!form.getValues("title")) form.setValue("title", alt) }} /></div>
         </div>
         <div>
           <label className="block text-sm font-medium">Tags (comma separated)</label>
@@ -156,17 +218,31 @@ export default function BlogForm({
       <input type="hidden" name="excerpt" value={form.watch("excerpt") || ""} />
       <input type="hidden" name="body" value={form.watch("body") || ""} />
       {/* Submit row */}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={hasErrors}>Save</Button>
+      <div className="flex items-center gap-3">
+        <div className="text-xs text-muted-foreground min-w-24">{saving === "saving" ? "Saving…" : saving === "saved" ? "All changes saved" : ""}</div>
+        <Button type="submit" disabled={hasErrors || !!slugError}>Save</Button>
         <Button
           type="submit"
           name="publish"
           value="1"
           variant="secondary"
-          disabled={hasErrors}
+          disabled={hasErrors || !!slugError}
         >
           Publish
         </Button>
+        {isEdit && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/admin/preview-token', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'post', id: defaultValues?.id || form.getValues('slug') }) })
+                const { token } = await res.json()
+                if (token) window.open(`/preview/post/${defaultValues?.id || form.getValues('slug')}?token=${token}`, '_blank')
+              } catch {}
+            }}
+          >Preview</Button>
+        )}
       </div>
     </form>
   )

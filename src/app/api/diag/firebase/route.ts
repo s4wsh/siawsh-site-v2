@@ -5,7 +5,6 @@ import { adminDb } from "@/lib/firebase-admin";
 export async function GET() {
   try {
     // lightweight check: list collections (no secrets exposed)
-    let ok = true;
     try {
       await adminDb.listCollections();
     } catch {

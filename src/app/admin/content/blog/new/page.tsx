@@ -3,6 +3,7 @@ import BlogForm from "@/components/admin/BlogForm"
 import { createBlogPost } from "../../actions"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default function NewBlogPostPage() {
   async function action(formData: FormData) {

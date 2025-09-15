@@ -1,11 +1,11 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import Image from "next/image"
-import { adminDb } from "@/lib/firebase-admin"
-import { projectConverter } from "@/lib/db"
-import type { Project } from "@/types/content"
+import AspectImage from "@/components/ui/AspectImage"
+import Filters from "@/components/site/Filters"
+import { filterProjects, allCategories, allYears, type ProjectEntry } from "@/lib/content/projects"
+import { GRID_SIZES } from "@/lib/seo"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 60
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -15,58 +15,39 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-type SearchParams = { tag?: string; page?: string | number }
+type SearchParams = { category?: string; year?: string }
 
 export default async function ProjectsIndex({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams
-  const tag = (sp.tag || "").toString().trim()
-  const page = Math.max(1, Number(sp.page || 1))
-  const limit = 12
+  const category = (sp.category || "").toString().trim()
+  const year = (sp.year || "").toString().trim()
 
-  // Fetch published projects ordered by publishedAt desc
-  const col = adminDb.collection("projects").withConverter(projectConverter)
-  const snapshot = await col.orderBy("publishedAt", "desc").get()
-  let items: Project[] = snapshot.docs
-    .map((d) => d.data())
-    .filter((p) => p.status === "published")
-
-  if (tag) {
-    items = items.filter((p: any) => (p.tags || []).some((t: string) => t.toLowerCase() === tag.toLowerCase()))
-  }
-
-  const start = (page - 1) * limit
-  const paged = items.slice(start, start + limit)
-
-  const makeHref = (nextPage: number) => `/projects${tag ? `?tag=${encodeURIComponent(tag)}&page=${nextPage}` : `?page=${nextPage}`}`
+  const items = filterProjects({ category: category || undefined, year: year || undefined })
+  const categories = allCategories()
+  const years = allYears()
 
   return (
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Projects</h1>
-        <form action="/projects" method="get" className="flex items-center gap-2">
-          <input
-            name="tag"
-            placeholder="Filter by tag…"
-            defaultValue={tag}
-            className="h-9 w-56 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-          />
-          <button className="h-9 rounded-md border px-3 text-sm">Apply</button>
-        </form>
+        <h1 className="text-2xl font-semibold relative glow-underline">Blueprint to Broadcast: Selected Work</h1>
+        <Filters categories={categories} years={years} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {paged.map((p) => (
-          <Link key={p.id} href={`/projects/${p.slug}`} className="group overflow-hidden rounded-lg border transition-colors hover:bg-accent">
-            {p.coverUrl && (
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                <Image src={p.coverUrl} alt={p.title} fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover transition-transform group-hover:scale-[1.02]" />
-              </div>
-            )}
+        {items.map((p: ProjectEntry) => (
+          <Link
+            key={p.slug}
+            href={`/projects/${p.slug}`}
+            prefetch
+            aria-label={`View case study: ${p.title}`}
+            className="group overflow-hidden rounded-2xl border border-muted transition-colors hover:bg-accent/10 neon-glow"
+          >
+            <AspectImage src={p.cover.src} alt={p.cover.alt} ratio="16/9" fill sizes={GRID_SIZES} />
             <div className="p-3">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-medium leading-tight">{p.title}</h3>
-                {("client" in p && (p as any).client) ? (
-                  <span className="text-xs text-muted-foreground">{(p as any).client}</span>
+                {p.client ? (
+                  <span className="text-xs text-muted-foreground">{p.client}</span>
                 ) : null}
               </div>
               <div className="mt-2 flex flex-wrap gap-1">
@@ -77,18 +58,6 @@ export default async function ProjectsIndex({ searchParams }: { searchParams: Pr
             </div>
           </Link>
         ))}
-      </div>
-
-      <div className="flex items-center justify-between p-2 text-sm">
-        <div>Page {page}</div>
-        <div className="flex gap-2">
-          {page > 1 && (
-            <Link href={makeHref(page - 1)} className="rounded-md border px-3 py-1">Previous</Link>
-          )}
-          {paged.length === limit && (
-            <Link href={makeHref(page + 1)} className="rounded-md border px-3 py-1">Next</Link>
-          )}
-        </div>
       </div>
     </div>
   )

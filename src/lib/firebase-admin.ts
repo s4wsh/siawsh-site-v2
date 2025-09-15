@@ -1,27 +1,69 @@
-import { initializeApp, applicationDefault, cert, getApps, getApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import type { App } from "firebase-admin/app";
+import { initializeApp, applicationDefault, cert, AppOptions, getApps, getApp } from "firebase-admin/app";
+import { getFirestore, Timestamp, FieldValue, Firestore } from "firebase-admin/firestore";
 
-function readServiceAccountJson(): string | null {
-  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64;
-  if (b64 && typeof b64 === "string") {
-    try {
-      return Buffer.from(b64, "base64").toString("utf8");
-    } catch {
-      // ignore and try JSON fallback
-    }
-  }
-  const json = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  return json ?? null;
+declare global {
+  // eslint-disable-next-line no-var
+  var _adminApp: App | undefined;
+  // eslint-disable-next-line no-var
+  var _adminDb: Firestore | undefined;
 }
 
-const raw = readServiceAccountJson();
+function buildOptions(): AppOptions {
+  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64;
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
-const app =
-  getApps().length
-    ? getApp()
-    : raw
-    ? initializeApp({ credential: cert(JSON.parse(raw) as any) })
-    : initializeApp({ credential: applicationDefault() });
+  if (b64) {
+    try {
+      const decoded = Buffer.from(b64, "base64").toString("utf8");
+      const parsed = JSON.parse(decoded);
+      if (typeof (parsed as any)?.client_email !== "string") {
+        throw new Error('decoded JSON missing "client_email" (string)');
+      }
+      if (typeof (parsed as any)?.private_key !== "string") {
+        throw new Error('decoded JSON missing "private_key" (string)');
+      }
+      return { credential: cert(parsed as any) };
+    } catch (e: any) {
+      throw new Error(`FIREBASE_SERVICE_ACCOUNT_B64 invalid: ${e?.message || e}`);
+    }
+  }
 
-export const adminDb = getFirestore(app);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof (parsed as any)?.client_email !== "string") {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON missing "client_email" (string)');
+      }
+      if (typeof (parsed as any)?.private_key !== "string") {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON missing "private_key" (string)');
+      }
+      return { credential: cert(parsed as any) };
+    } catch (e: any) {
+      throw new Error(`FIREBASE_SERVICE_ACCOUNT_JSON invalid: ${e?.message || e}`);
+    }
+  }
+
+  // Last resort: ADC (requires GOOGLE_APPLICATION_CREDENTIALS on the host)
+  return { credential: applicationDefault() };
+}
+
+function initApp(): App {
+  if (global._adminApp) return global._adminApp;
+  const app = getApps().length ? getApp() : initializeApp(buildOptions());
+  global._adminApp = app;
+  return app;
+}
+
+const app = initApp();
+
+function initDb(): Firestore {
+  if (global._adminDb) return global._adminDb;
+  const db = getFirestore(app);
+  global._adminDb = db;
+  return db;
+}
+
+export const adminDb = initDb();
 export default app;
+export { Timestamp, FieldValue };

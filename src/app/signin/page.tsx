@@ -28,8 +28,9 @@ export default function SignInPage() {
     try {
       await signInWithEmailAndPassword(clientAuth, values.email, values.password)
       window.location.href = "/admin"
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to sign in")
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg || "Failed to sign in")
     }
   }
 

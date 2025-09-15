@@ -1,0 +1,26 @@
+{
+  "slug": "malmalling-vineyard",
+  "title": "Malmalling Vineyard Rebrand",
+  "date": "2025-01-15",
+  "year": 2025,
+  "client": "Malmalling Vineyard",
+  "role": ["Brand Strategy", "Art Direction"],
+  "tools": ["Figma", "After Effects"],
+  "category": ["Branding", "Packaging"],
+  "summary": "A modern, heritage‑aware rebrand for a boutique vineyard—spanning label design, motion identity, and launch assets. ",
+  "problem": "The legacy brand lacked consistency across packaging and digital touchpoints. Seasonal label variants drifted apart and diluted recognition.",
+  "solution": "We developed a cohesive visual system with modular typography and a restrained color palette. Motion elements mirror the brand's landscape lines.",
+  "results": [
+    { "metric": "Sell‑through", "value": "+18% in Q1", "note": "after launch" },
+    { "metric": "Recognition", "value": "+32%", "note": "unaided brand recall" }
+  ],
+  "cover": { "src": "/images/projects/malmalling-vineyard/cover.svg", "alt": "Malmalling Vineyard bottle labels" },
+  "gallery": [
+    { "src": "/images/projects/malmalling-vineyard/g1.svg", "alt": "Primary label system" },
+    { "src": "/images/projects/malmalling-vineyard/g2.svg", "alt": "Secondary label variants" },
+    { "src": "/images/projects/malmalling-vineyard/g3.svg", "alt": "Motion reveal frames" },
+    { "src": "/images/projects/malmalling-vineyard/g4.svg", "alt": "Launch collateral grid" }
+  ],
+  "tags": ["wine", "label", "identity"]
+}
+

@@ -1,0 +1,26 @@
+{
+  "slug": "master-farm-dried-fruits",
+  "title": "Master Farm Dried Fruits Packaging",
+  "date": "2024-10-01",
+  "year": 2024,
+  "client": "Master Farm",
+  "role": ["Packaging Design", "Illustration"],
+  "tools": ["Illustrator", "Cinema 4D"],
+  "category": ["Packaging"],
+  "summary": "A fresh shelf presence for a line of dried fruits—bold colors, clear hierarchy, and tactile finishes for premium cues.",
+  "problem": "Skus felt generic and underperformed on crowded aisles. The brand needed a stronger visual hook and clearer flavor differentiation.",
+  "solution": "We introduced large‑scale fruit forms with a geometric treatment. Color‑coded panels and consistent typographic rhythm guide quick scanning.",
+  "results": [
+    { "metric": "Category share", "value": "+6% YoY" },
+    { "metric": "Cost per design", "value": "−12%", "note": "modular dielines" }
+  ],
+  "cover": { "src": "/images/projects/master-farm-dried-fruits/cover.svg", "alt": "Master Farm packaging lineup" },
+  "gallery": [
+    { "src": "/images/projects/master-farm-dried-fruits/g1.svg", "alt": "Front panels" },
+    { "src": "/images/projects/master-farm-dried-fruits/g2.svg", "alt": "Back panels & nutrition" },
+    { "src": "/images/projects/master-farm-dried-fruits/g3.svg", "alt": "Flavor colorways" },
+    { "src": "/images/projects/master-farm-dried-fruits/g4.svg", "alt": "Retail mockups" }
+  ],
+  "tags": ["food", "retail"]
+}
+

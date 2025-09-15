@@ -3,6 +3,7 @@ import ProjectForm from "@/components/admin/ProjectForm"
 import { getProject, updateProject } from "../../actions"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const p = await params
@@ -43,13 +44,46 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
       publishedAt: proj.publishedAt,
     }
     await updateProject(proj.id!, payload)
-    redirect(`/admin/content?tab=case-studies`)
+    redirect(`/admin/content?kind=cases`)
+  }
+
+  async function autosave(fd: FormData) {
+    "use server"
+    const proj = project!;
+    const patch: any = {
+      title: String(fd.get("title") || ""),
+      slug: String(fd.get("slug") || proj.slug || ""),
+      coverUrl: String(fd.get("coverUrl") || proj.coverUrl || ""),
+      client: String(fd.get("client") || proj.client || ""),
+      excerpt: String(fd.get("excerpt") || proj.excerpt || ""),
+      status: proj.status || "draft",
+    }
+    await updateProject(proj.id!, patch)
   }
 
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Edit Case Study</h1>
-      <ProjectForm action={action} isEdit defaultValues={project} />
+      <form action={async () => {
+        "use server"
+        const slug = (project as any).slug || project.id
+        const path = `/projects/${slug}`
+        const { revalidatePath } = await import("next/cache")
+        revalidatePath("/projects")
+        revalidatePath(path)
+        try {
+          const base = process.env.NEXT_PUBLIC_SITE_URL
+          const url = base ? `${base}/api/revalidate` : "/api/revalidate"
+          await fetch(url, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ paths: ["/projects", path] }),
+          })
+        } catch {}
+      }}>
+        <button type="submit" className="rounded-full border px-3 py-1 text-sm">Publish now</button>
+      </form>
+      <ProjectForm action={action} isEdit defaultValues={project} autosave={autosave} />
     </div>
   )
 }

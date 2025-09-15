@@ -6,8 +6,9 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "**" }
-    ]
+      { protocol: "https", hostname: "static.wixstatic.com", pathname: "/**" },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+    ] as const,
   }
 };
 

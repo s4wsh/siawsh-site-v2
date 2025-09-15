@@ -15,6 +15,29 @@ export const blogConverter: FirestoreDataConverter<BlogPost> = {
     return b as any;
   },
   fromFirestore(snap: QueryDocumentSnapshot): BlogPost {
-    return { id: snap.id, ...(snap.data() as any) } as BlogPost;
+    const data = snap.data() as any;
+
+    const toIso = (v: any): string | undefined => {
+      if (!v) return undefined;
+      try {
+        if (typeof v?.toDate === "function") {
+          return v.toDate().toISOString();
+        }
+        if (typeof v?.seconds === "number") {
+          return new Date(v.seconds * 1000).toISOString();
+        }
+        if (typeof v === "string") return v;
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) return d.toISOString();
+      } catch {}
+      return undefined;
+    };
+
+    return {
+      id: snap.id,
+      ...data,
+      updatedAt: toIso(data?.updatedAt),
+      publishedAt: toIso(data?.publishedAt),
+    } as BlogPost;
   },
 };

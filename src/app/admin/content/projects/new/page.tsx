@@ -3,6 +3,7 @@ import ProjectForm from "@/components/admin/ProjectForm"
 import { createProject } from "../../actions"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default function NewProjectPage() {
   async function action(formData: FormData) {

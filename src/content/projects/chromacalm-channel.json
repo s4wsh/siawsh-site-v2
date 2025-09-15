@@ -1,0 +1,25 @@
+{
+  "slug": "chromacalm-channel",
+  "title": "ChromaCALM Ambient Channel",
+  "date": "2023-06-20",
+  "year": 2023,
+  "client": "ChromaCALM",
+  "role": ["Motion System", "Sound Direction"],
+  "tools": ["TouchDesigner", "Ableton"],
+  "category": ["Motion", "Interior"],
+  "summary": "A generative motion identity for an ambient channel—color‑driven sequences tuned for hospitals and wellness spaces.",
+  "problem": "Static loops caused fatigue in long‑stay environments. The client needed low‑variance visuals that remained soothing for hours.",
+  "solution": "We built a color‑state engine with parametric motion envelopes. The system produces infinite, slow‑evolving compositions.",
+  "results": [
+    { "metric": "Dwell comfort", "value": "+22%", "note": "patient surveys" }
+  ],
+  "cover": { "src": "/images/projects/chromacalm-channel/cover.svg", "alt": "ChromaCALM ambient visuals" },
+  "gallery": [
+    { "src": "/images/projects/chromacalm-channel/g1.svg", "alt": "Color states" },
+    { "src": "/images/projects/chromacalm-channel/g2.svg", "alt": "Envelope curves" },
+    { "src": "/images/projects/chromacalm-channel/g3.svg", "alt": "Installation view" },
+    { "src": "/images/projects/chromacalm-channel/g4.svg", "alt": "System diagram" }
+  ],
+  "tags": ["generative", "calm"]
+}
+

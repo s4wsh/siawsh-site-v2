@@ -1,145 +1,115 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { adminDb } from "@/lib/firebase-admin"
-import { blogConverter } from "@/lib/db"
-import type { BlogPost } from "@/types/content"
-import Image from "next/image"
+import { getPostBySlug, loadBlog } from "@/lib/content/blog"
+import Prose from "@/components/blog/Prose"
+import AspectImage from "@/components/ui/AspectImage"
+import { blogJsonLd, canonical } from "@/lib/seo"
 
-export const dynamic = "force-dynamic"
-export const revalidate = 300
+export const revalidate = 60
 export const dynamicParams = true
+export const dynamic = 'error'
 
-async function fetchBySlug(slug: string): Promise<BlogPost | null> {
-  const snap = await adminDb.collection("blogPosts").withConverter(blogConverter).where("slug", "==", slug).limit(1).get()
-  if (snap.empty) return null
-  const doc = snap.docs[0]
-  const data = doc.data() as BlogPost
-  if ((data as any).status !== "published") return null
-  return data
-}
+type P = { slug: string }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const p = await params
-  const data = await fetchBySlug(p.slug)
-  if (!data) return {}
-  const seo = (data as any).seo || {}
-  const title = seo.title || `${data.title} — Blog`
-  const description = seo.description || (data.excerpt || data.title)
+export async function generateMetadata({ params }: { params: Promise<P> }): Promise<Metadata> {
+  const p = await params;
+  const data = await getPostBySlug(p.slug)
+  if (!data) {
+    return {
+      title: "Post not found",
+      description: "This post is unavailable.",
+      alternates: { canonical: canonical(`/blog/${p.slug}`) },
+    }
+  }
+  const title = `${data.title} — Insights`
+  const description = data.excerpt || `Strategy in motion: ${data.title}`
   return {
     title,
     description,
-    alternates: { canonical: `/blog/${data.slug}` },
+    alternates: { canonical: canonical(`/blog/${data.slug}`) },
     openGraph: {
       title,
       description,
-      images: data.coverUrl ? [{ url: data.coverUrl }] : undefined,
+      images: data.cover?.src ? [{ url: data.cover.src }] : ["/og/default-og.png"],
       type: "article",
-      publishedTime: data.publishedAt,
+      publishedTime: data.date,
     },
   }
 }
 
-export default async function BlogDetail({ params }: { params: Promise<{ slug: string }> }) {
-  const p = await params
-  const data = await fetchBySlug(p.slug)
-  if (!data) return notFound()
+export default async function BlogDetail({ params }: { params: Promise<P> }) {
+  const p = await params;
+  const data = await getPostBySlug(p.slug)
+  if (!data) return notFound();
 
-  // Find previous (newer) and next (older) posts based on publishedAt
-  let prev: BlogPost | null = null
-  let next: BlogPost | null = null
-  try {
-    const snap = await adminDb.collection("blogPosts").withConverter(blogConverter).orderBy("publishedAt", "desc").get()
-    const list = snap.docs
-      .map((d) => d.data())
-      .filter((p) => p.status === "published" && p.publishedAt)
-    const idx = list.findIndex((p) => p.slug === data.slug)
-    if (idx > 0) prev = list[idx - 1]
-    if (idx >= 0 && idx < list.length - 1) next = list[idx + 1]
-  } catch {}
+  const jsonLd = blogJsonLd(data)
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: data.title,
-    datePublished: data.publishedAt,
-    inLanguage: data.lang,
-    image: data.coverUrl ? [data.coverUrl] : undefined,
-    keywords: (data.tags || []).join(", "),
-    description: data.excerpt,
-  }
+  const toc = data.headings.filter((h) => h.depth === 2)
+
+  const all = await loadBlog();
+  const related = all.filter((x) => x.slug !== data.slug && (x.tags || []).some((t) => (data.tags || []).includes(t))).slice(0, 3);
 
   return (
     <article className="py-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">{data.title}</h1>
-        <div className="text-sm text-muted-foreground">{data.publishedAt?.slice(0, 10)}</div>
-        <div className="flex flex-wrap gap-1 text-xs">
-          {(data.tags || []).map((t) => (
-            <span key={t} className="rounded bg-muted px-2 py-0.5 text-muted-foreground">{t}</span>
-          ))}
+        <div className="text-sm text-muted-foreground">
+          <span>{data.date.slice(0, 10)}</span>
+          <span> • {data.readingMinutes} min read</span>
         </div>
       </header>
-      {data.coverUrl && (
-        <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-lg border bg-muted">
-          <Image src={data.coverUrl} alt={data.title} fill sizes="100vw" className="object-cover" />
-        </div>
-      )}
+
+      {data.cover ? (
+        <AspectImage src={data.cover.src} alt={data.cover.alt || data.title} ratio="16/9" fill sizes="100vw" />
+      ) : null}
+
       {data.excerpt && (
-        <section className="prose mt-6 max-w-none">
-          <h2 className="mb-2 text-lg font-semibold">Introduction</h2>
-          <p className="text-muted-foreground">{data.excerpt}</p>
+        <section className="mt-6 max-w-none text-muted-foreground">
+          <p>{data.excerpt}</p>
         </section>
       )}
 
-      {(data as any).problem && (
-        <section className="prose mt-6 max-w-none">
-          <h2 className="mb-2 text-lg font-semibold">Problem</h2>
-          <div className="whitespace-pre-wrap leading-7">{(data as any).problem}</div>
-        </section>
-      )}
-      {(data as any).approach && (
-        <section className="prose mt-6 max-w-none">
-          <h2 className="mb-2 text-lg font-semibold">Approach</h2>
-          <div className="whitespace-pre-wrap leading-7">{(data as any).approach}</div>
-        </section>
-      )}
-      {(data as any).solution && (
-        <section className="prose mt-6 max-w-none">
-          <h2 className="mb-2 text-lg font-semibold">Solution</h2>
-          <div className="whitespace-pre-wrap leading-7">{(data as any).solution}</div>
-        </section>
-      )}
-      {(data as any).results && (
-        <section className="prose mt-6 max-w-none">
-          <h2 className="mb-2 text-lg font-semibold">Results</h2>
-          <div className="whitespace-pre-wrap leading-7">{(data as any).results}</div>
-        </section>
-      )}
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_240px] lg:items-start">
+        <Prose html={data.html} />
+        {!!toc.length && (
+          <aside className="lg:sticky lg:top-24 border rounded-md p-3 text-sm hidden lg:block">
+            <div className="font-medium mb-2">On this page</div>
+            <ul className="space-y-1">
+              {toc.map((h) => (
+                <li key={h.id}>
+                  <a href={`#${h.id}`} className="hover:underline">
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+      </div>
 
-      {data.body && (
-        <section className="prose mt-6 max-w-none">
-          <h2 className="mb-2 text-lg font-semibold">Full Article</h2>
-          {/* TODO: swap to a markdown renderer if installed */}
-          <div className="whitespace-pre-wrap leading-7">{data.body}</div>
-        </section>
-      )}
+      <nav className="mt-10 border-t pt-4 text-sm">
+        <Link href="/blog" className="hover:underline">← Back to Blog</Link>
+      </nav>
 
-      {(prev || next) && (
-        <nav className="mt-10 flex items-center justify-between border-t pt-4 text-sm">
-          <div>
-            {prev && (
-              <Link href={`/blog/${prev.slug}`} className="hover:underline">← {prev.title}</Link>
-            )}
-          </div>
-          <div>
-            {next && (
-              <Link href={`/blog/${next.slug}`} className="hover:underline">{next.title} →</Link>
-            )}
-          </div>
-        </nav>
-      )}
+      {related.length ? (
+        <section className="mt-6">
+          <h2 className="text-lg font-semibold mb-3">Related posts</h2>
+          <ul className="list-disc pl-5 text-sm">
+            {related.map((r) => (
+              <li key={r.slug}>
+                <Link href={`/blog/${r.slug}`} className="hover:underline">{r.title}</Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </article>
   )
+}
+
+export async function generateStaticParams() {
+  const items = await loadBlog();
+  return items.map((p) => ({ slug: p.slug }));
 }

@@ -7,6 +7,7 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
     | "default"
+    | "accent"
     | "secondary"
     | "ghost"
     | "outline"
@@ -22,16 +23,30 @@ const sizeStyles: Record<NonNullable<ButtonProps["size"]>, string> = {
 }
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
-  default:
-    "bg-primary text-primary-foreground hover:bg-primary/90",
-  secondary:
-    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-  ghost:
-    "bg-transparent hover:bg-accent text-foreground",
-  outline:
-    "border border-input bg-background hover:bg-accent",
-  destructive:
-    "bg-destructive text-white hover:bg-destructive/90",
+  default: cn(
+    "rounded-xl border border-muted px-4 py-2 font-medium",
+    "bg-foreground text-background hover:bg-muted hover:text-foreground"
+  ),
+  accent: cn(
+    "rounded-xl border border-transparent px-4 py-2 font-medium",
+    "bg-accent text-background hover:bg-accent/90"
+  ),
+  secondary: cn(
+    "rounded-xl border border-muted px-4 py-2 font-medium",
+    "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+  ),
+  ghost: cn(
+    "rounded-xl px-4 py-2 font-medium",
+    "bg-transparent hover:bg-accent/10 text-foreground"
+  ),
+  outline: cn(
+    "rounded-xl border border-muted px-4 py-2 font-medium",
+    "bg-background hover:bg-accent/10"
+  ),
+  destructive: cn(
+    "rounded-xl border border-transparent px-4 py-2 font-medium",
+    "bg-destructive text-white hover:bg-destructive/90"
+  ),
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -39,7 +54,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center gap-2 transition-colors neon-glow",
+          "focus:outline-none focus:ring-2 focus:ring-accent/40",
+          "disabled:pointer-events-none disabled:opacity-50",
           sizeStyles[size],
           variantStyles[variant],
           className
