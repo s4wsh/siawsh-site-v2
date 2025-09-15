@@ -20,8 +20,7 @@ function slugify(input: string) {
 }
 
 import AdminMediaPicker from "@/components/admin/AdminMediaPicker"
-import MarkdownToolbar from "@/components/admin/MarkdownToolbar"
-import MarkdownPreview from "@/components/admin/MarkdownPreview"
+import MarkdownEditorPro from "@/components/admin/editor/MarkdownEditorPro"
 
 export default function BlogForm({
   defaultValues,
@@ -64,8 +63,15 @@ export default function BlogForm({
   const hasErrors = Object.keys(form.formState.errors).length > 0
   const [saving, setSaving] = React.useState<"idle"|"saving"|"saved">("idle")
   const [slugError, setSlugError] = React.useState<string | null>(null)
-  const [mode, setMode] = React.useState<"body"|"preview">("body")
-  const bodyRef = React.useRef<HTMLTextAreaElement | null>(null)
+  const pickerRef = React.useRef<HTMLSpanElement | null>(null)
+  const pickResolve = React.useRef<((x: { src: string; alt?: string }|null)=>void) | null>(null)
+  const onPickImage = React.useCallback(async () => {
+    return new Promise<{ src: string; alt?: string } | null>((resolve) => {
+      pickResolve.current = resolve
+      const btn = pickerRef.current?.querySelector('button') as HTMLButtonElement | null
+      if (btn) btn.click(); else resolve(null)
+    })
+  }, [])
 
   // Unsaved changes prompt
   useEffect(() => {
@@ -189,41 +195,16 @@ export default function BlogForm({
       </div>
       <div>
         <label className="block text-sm font-medium">Body</label>
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex gap-2">
-            <Button type="button" size="sm" variant="outline" onClick={() => {
-              const v = form.getValues("body") || "";
-              const outline = `## Introduction\n\n## Section 1\n\n## Section 2\n\n## Takeaways\n\n`;
-              form.setValue("body", v ? `${v}\n\n${outline}` : outline);
-            }}>Insert Blog outline</Button>
-          </div>
-          <MarkdownToolbar
-            value={form.getValues("body") || ""}
-            onChange={(v) => form.setValue("body", v)}
-            textareaRef={bodyRef}
-            onPickImage={async () => {
-              // Fallback to simple prompts; library button is available elsewhere
-              const url = window.prompt('Image URL') || '';
-              const alt = window.prompt('Alt text') || '';
-              return url ? { src: url, alt } : null;
-            }}
-            mode={mode}
-            onModeChange={setMode}
-          />
-        </div>
-        {mode === 'body' ? (
-          (() => { const { ref, ...rest } = form.register("body"); return (
-          <textarea
-            {...rest}
-            ref={(el) => { bodyRef.current = el; ref(el) }}
-            rows={12}
-            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
-          />) })()
-        ) : (
-          <div className="rounded-md border p-3">
-            <MarkdownPreview value={form.getValues("body") || ""} />
-          </div>
-        )}
+        <span className="sr-only" ref={pickerRef}>
+          <AdminMediaPicker buttonLabel="OpenPicker" onSelect={({ src, alt }) => { pickResolve.current?.({ src, alt }); pickResolve.current = null; }} />
+        </span>
+        <MarkdownEditorPro
+          value={form.getValues("body") || ""}
+          onChange={(v)=>form.setValue("body", v)}
+          onPickImage={onPickImage}
+          variant="blog"
+          autosaveState={saving}
+        />
       </div>
 
       {/* Gallery */}

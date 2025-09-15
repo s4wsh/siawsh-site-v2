@@ -1,0 +1,9 @@
+.md-editor .md-input { @apply w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm font-mono; }
+.md-editor .md-pane { @apply rounded-md border p-2; }
+.md-editor .md-preview { @apply prose prose-neutral dark:prose-invert max-w-none; }
+.md-split.edit { display: block; }
+.md-split.preview { display: block; }
+.md-split.split { display: grid; grid-template-columns: 50% 8px 50%; gap: .5rem; align-items: stretch; }
+.md-divider { cursor: col-resize; display: flex; align-items: center; justify-content: center; }
+.md-divider .glow-divider { width: 4px; height: 70%; border-radius: 9999px; background: radial-gradient(80% 200% at 50% 50%, rgba(0,255,255,.6), rgba(0,255,255,.2) 60%, transparent); filter: blur(2px); }
+
