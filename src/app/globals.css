@@ -97,6 +97,9 @@
   }
 }
 
+/* MDX figure caption styling (public & admin previews) */
+.prose figcaption { text-align: center; font-size: .8rem; color: var(--muted-foreground); margin-top: .25rem; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

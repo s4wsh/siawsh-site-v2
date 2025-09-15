@@ -71,7 +71,7 @@ export default async function BlogDetail({ params }: { params: Promise<P> }) {
         </section>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_240px] lg:items-start">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_240px] lg:items-start prose prose-neutral dark:prose-invert max-w-none prose-figcaption:text-xs prose-figcaption:text-muted-foreground prose-figcaption:text-center">
         <Prose html={data.html} />
         {!!toc.length && (
           <aside className="lg:sticky lg:top-24 border rounded-md p-3 text-sm hidden lg:block">
